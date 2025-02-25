@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -11,12 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class FilmControllerTest {
 
-    private FilmController controller;
-
-    @BeforeEach
-    public void beforeEach() {
-        controller = new FilmController();
-    }
+    private final FilmController controller = new FilmController();
 
     @Test
     public void shouldPassValidationTest() {
