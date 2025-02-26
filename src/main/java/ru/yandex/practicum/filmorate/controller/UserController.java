@@ -25,49 +25,44 @@ public class UserController {
 
     @PostMapping
     public User createUsers(@Valid @RequestBody User user) {
-        try {
-            validationUser(user);
-            user.setLogin(user.getLogin().trim().replace(" ", "_"));
-            user.setId(getNextId());
-            users.put(user.getId(), user);
-            log.info("Создан пользователь с именем: {}", user.getName());
-            return user;
-        } catch (ValidationException exception) {
-            log.error("Ошибка при создании пользователя: {}", exception.getMessage());
-            throw exception;
-        }
+        validationUser(user);
+        user.setLogin(user.getLogin().trim().replace(" ", "_"));
+        user.setId(getNextId());
+        users.put(user.getId(), user);
+        log.info("Создан пользователь с именем: {}", user.getName());
+        return user;
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User newUser) {
-        try {
-            if (!users.containsKey(newUser.getId())) {
-                throw new ValidationException("Пользователя с таким ид не существует");
-            }
-            validationUser(newUser);
-            newUser.setLogin(newUser.getLogin().trim().replace(" ", "_"));
-            users.put(newUser.getId(), newUser);
-            log.info("Пользователь с именем: {} обновлен", newUser.getName());
-            return newUser;
-        } catch (ValidationException exception) {
-            log.error("Ошибка при обновлении пользователя: {}", exception.getMessage());
-            throw exception;
+        if (!users.containsKey(newUser.getId())) {
+            throw new ValidationException("Пользователя с id " + newUser.getId() + " не существует");
         }
+        validationUser(newUser);
+        newUser.setLogin(newUser.getLogin().trim().replace(" ", "_"));
+        users.put(newUser.getId(), newUser);
+        log.info("Пользователь с именем: {} обновлен", newUser.getName());
+        return newUser;
     }
 
     public void validationUser(User user) {
-        if (user.getName() == null) {
-            log.info("При создании пользователя не указано имя, используем логин {}", user.getLogin());
-            user.setName(user.getLogin().trim().replace(" ", "_"));
-        }
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            throw new ValidationException("Почта указана некорректно");
-        }
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            throw new ValidationException("Логин не может быть пустым или содержать пробелы");
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("Дата рождения не может быть больше текущей даты");
+        try {
+            if (user.getName() == null) {
+                log.info("При создании пользователя не указано имя, используем логин {}", user.getLogin());
+                user.setName(user.getLogin().trim().replace(" ", "_"));
+            }
+            if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
+                throw new ValidationException("Почта указана некорректно");
+            }
+            if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
+                throw new ValidationException("Логин не может быть пустым или содержать пробелы");
+            }
+            if (user.getBirthday().isAfter(LocalDate.now())) {
+                throw new ValidationException("Дата рождения не может быть больше текущей даты");
+            }
+        } catch (ValidationException exception) {
+            log.error("Ошибка при создании пользователя: {}", exception.getMessage());
+            throw exception;
         }
     }
 
