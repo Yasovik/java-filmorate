@@ -1,16 +1,17 @@
-package ru.yandex.practicum.filmorate.controller;
+package ru.yandex.practicum.filmorate.storage;
 
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FilmControllerTest {
+public class InMemoryFilmStorageTest {
 
-    private final FilmController controller = new FilmController();
+    private final InMemoryFilmStorage controller = new InMemoryFilmStorage();
 
     @Test
     public void shouldPassValidationTest() {

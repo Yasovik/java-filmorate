@@ -2,76 +2,76 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
+
+    UserService userService;
+
+    @Autowired
+    public UserController(UserService service) {
+        this.userService = service;
+    }
 
     @GetMapping
-    public Collection<User> findAllUsers() {
-        log.info("Запрошен список всех пользователей, в списке {} пользователей", users.size());
-        return users.values();
+    public ResponseEntity<Collection<User>> findAllUsers() {
+        return ResponseEntity.ok(userService.getUsers());
     }
 
     @PostMapping
-    public User createUsers(@Valid @RequestBody User user) {
-        validationUser(user);
-        user.setLogin(user.getLogin().trim().replace(" ", "_"));
-        user.setId(getNextId());
-        users.put(user.getId(), user);
-        log.info("Создан пользователь с именем: {}", user.getName());
-        return user;
+    public ResponseEntity<?> createUser(@Valid @RequestBody User user) {
+        log.info("Успешное создание нового пользователя: {}", user);
+        userService.createUser(user);
+        return ResponseEntity.ok(user);
     }
 
     @PutMapping
-    public User updateUser(@Valid @RequestBody User newUser) {
-        if (!users.containsKey(newUser.getId())) {
-            throw new ValidationException("Пользователя с id " + newUser.getId() + " не существует");
-        }
-        validationUser(newUser);
-        newUser.setLogin(newUser.getLogin().trim().replace(" ", "_"));
-        users.put(newUser.getId(), newUser);
-        log.info("Пользователь с именем: {} обновлен", newUser.getName());
-        return newUser;
+    public ResponseEntity<?> updateUser(@Valid @RequestBody User user) {
+        log.info("Успешное обновление пользователя: {}", user);
+        userService.updateUser(user);
+        return ResponseEntity.ok(user);
     }
 
-    public void validationUser(User user) {
-        try {
-            if (user.getName() == null) {
-                log.info("При создании пользователя не указано имя, используем логин {}", user.getLogin());
-                user.setName(user.getLogin().trim().replace(" ", "_"));
-            }
-            if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-                throw new ValidationException("Почта указана некорректно");
-            }
-            if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-                throw new ValidationException("Логин не может быть пустым или содержать пробелы");
-            }
-            if (user.getBirthday().isAfter(LocalDate.now())) {
-                throw new ValidationException("Дата рождения не может быть больше текущей даты");
-            }
-        } catch (ValidationException exception) {
-            log.error("Ошибка при создании пользователя: {}", exception.getMessage());
-            throw exception;
-        }
+    @GetMapping("/{id}")
+    public ResponseEntity<?> findUser(@PathVariable int id) {
+        log.info("Получение пользователя по id");
+        return ResponseEntity.ok(userService.findUser(id));
     }
 
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @PutMapping("/{id}/friends/{friendId}")
+    public ResponseEntity<?> addFriend(@PathVariable("id") int userId, @PathVariable int friendId) {
+        log.info("Добавление в друзья");
+        userService.addFriend(userId, friendId);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public ResponseEntity<?> deleteFriend(@PathVariable("id") int userId, @PathVariable int friendId) {
+        log.info("Удаление из друзей");
+        userService.deleteFriend(userId, friendId);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @GetMapping("/{id}/friends")
+    public ResponseEntity<Collection<User>> getFriends(@PathVariable int id) {
+        log.info("Получение всех друзей пользователя с id = {}", id);
+        return ResponseEntity.ok(userService.getFriends(id));
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public ResponseEntity<Collection<User>> getFriends(@PathVariable int id, @PathVariable int otherId) {
+        log.info("Получение общих друзей пользователей с id {} и {}", id, otherId);
+        return ResponseEntity.ok(userService.getMutualFriends(id, otherId));
+    }
+
 }
