@@ -8,13 +8,13 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Service
 public class FilmService {
-    FilmStorage filmStorage;
-    UserStorage userStorage;
+    private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
 
     @Autowired
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
@@ -22,7 +22,7 @@ public class FilmService {
         this.userStorage = userStorage;
     }
 
-    public Collection<Film> allFilms() {
+    public List<Film> getAllFilms() {
         return filmStorage.allFilms();
     }
 
@@ -38,7 +38,7 @@ public class FilmService {
         return filmStorage.createFilm(film);
     }
 
-    public Collection<Film> getTopFilms(int limit) {
+    public List<Film> getTopFilms(int limit) {
         log.info("Получены лучшие {} фильмов", limit);
         return filmStorage.getTopFilms(limit);
     }

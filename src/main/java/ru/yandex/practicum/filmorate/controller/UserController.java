@@ -10,13 +10,14 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
 
-    UserService userService;
+    private final UserService userService;
 
     @Autowired
     public UserController(UserService service) {
@@ -24,7 +25,7 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<Collection<User>> findAllUsers() {
+    public ResponseEntity<List<User>> findAllUsers() {
         return ResponseEntity.ok(userService.getUsers());
     }
 
@@ -44,26 +45,26 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findUser(@PathVariable int id) {
-        log.info("Получение пользователя по id");
+        log.info("Получение пользователя по id = {}", id);
         return ResponseEntity.ok(userService.findUser(id));
     }
 
     @PutMapping("/{id}/friends/{friendId}")
     public ResponseEntity<?> addFriend(@PathVariable("id") int userId, @PathVariable int friendId) {
-        log.info("Добавление в друзья");
+        log.info("Добавление в друзья пользователя с id {}", friendId);
         userService.addFriend(userId, friendId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public ResponseEntity<?> deleteFriend(@PathVariable("id") int userId, @PathVariable int friendId) {
-        log.info("Удаление из друзей");
+        log.info("Удаление из друзей из друзей пользователя с id {}", friendId);
         userService.deleteFriend(userId, friendId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @GetMapping("/{id}/friends")
-    public ResponseEntity<Collection<User>> getFriends(@PathVariable int id) {
+    public ResponseEntity<List<User>> getFriends(@PathVariable int id) {
         log.info("Получение всех друзей пользователя с id = {}", id);
         return ResponseEntity.ok(userService.getFriends(id));
     }

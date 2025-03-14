@@ -7,10 +7,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -23,9 +20,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> allFilms() {
+    public List<Film> allFilms() {
         log.info("Запрошен список всех фильмов, в списке {} фильмов", films.size());
-        return films.values();
+        return new ArrayList<>(films.values());
     }
 
     @Override
@@ -62,7 +59,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         return newFilm;
     }
 
-    public Collection<Film> getTopFilms(int limit) {
+    public List<Film> getTopFilms(int limit) {
         return films.values().stream()
                 .sorted((film1, film2) -> Integer.compare(film2.getLike().size(), film1.getLike().size())) // Сортируем по убыванию количества лайков
                 .limit(limit)

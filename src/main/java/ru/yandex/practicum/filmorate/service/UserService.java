@@ -7,13 +7,13 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class UserService {
-    UserStorage userStorage;
+    private final UserStorage userStorage;
 
     @Autowired
     public UserService(UserStorage userStorage) {
@@ -32,7 +32,7 @@ public class UserService {
         return userStorage.findUser(id);
     }
 
-    public Collection<User> getUsers() {
+    public List<User> getUsers() {
         return userStorage.findAllUsers();
     }
 
@@ -64,7 +64,7 @@ public class UserService {
         }
     }
 
-    public Collection<User> getFriends(int id) {
+    public List<User> getFriends(int id) {
         log.info("Попытка получить друзей пользователя {}", id);
         try {
             User user = userStorage.findUser(id);
@@ -78,7 +78,7 @@ public class UserService {
         }
     }
 
-    public Collection<User> getMutualFriends(int firstId, int secondId) {
+    public List<User> getMutualFriends(int firstId, int secondId) {
         log.info("Попытка получить общих друзей пользователей {} и {}", firstId, secondId);
         try {
             User firstUser = userStorage.findUser(firstId);

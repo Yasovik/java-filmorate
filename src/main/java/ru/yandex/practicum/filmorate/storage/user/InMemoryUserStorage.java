@@ -7,10 +7,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -18,15 +15,15 @@ public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
 
     @Override
-    public Collection<User> findAllUsers() {
+    public List<User> findAllUsers() {
         log.info("Запрошен список всех пользователей, в списке {} пользователей", users.size());
-        return users.values();
+        return new ArrayList<>(users.values());
     }
 
     @Override
     public User findUser(int userId) {
         if (users.containsKey((long) userId)) {
-            log.info("Пользователь успешно получен");
+            log.info("Пользователь c id {} успешно получен", userId);
             return users.get((long) userId);
         } else {
             log.warn("Попытка получить несуществующего пользователя");
