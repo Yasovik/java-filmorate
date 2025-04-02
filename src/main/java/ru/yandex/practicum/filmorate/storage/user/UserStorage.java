@@ -13,7 +13,9 @@ public interface UserStorage {
 
     User updateUser(User newUser);
 
-    void validationUser(User user);
+    void addFriends(Long userId, Long friendId);
 
-    long getNextId();
+    List<User> getFriends(Long id);
+
+    void removeFriends(Long userId, Long friendId);
 }
