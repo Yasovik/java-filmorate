@@ -67,7 +67,6 @@ public class FilmService {
             log.error("ошибка с id юзера  {}", userId);
             throw new NotFoundException("Юзера с таким id найдено");
         }
-        //filmStorage.checkLikeOnFilm(filmId,userId);
         filmStorage.addLike((long) filmId, (long) userId);
     }
 

@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @JdbcTest
 @AutoConfigureTestDatabase
@@ -85,5 +86,28 @@ class UserDbStorageTest {
         assertThat(users.get(2)).hasFieldOrPropertyWithValue("login", "login3");
         assertThat(users.get(2)).hasFieldOrPropertyWithValue("name", "name3");
         assertThat(users.get(2)).hasFieldOrProperty("birthday");
+    }
+
+    @Test
+    @Sql(scripts = {"/clear_all.sql", "/test-get-users.sql"})
+    void getFriendsAddFriends() {
+        storage.addFriends(1L, 2L);
+        storage.addFriends(1L, 3L);
+        List<User> testList = storage.getFriends(1L);
+        assertEquals(2, testList.size());
+        assertEquals(2, testList.get(0).getId());
+        assertEquals(3, testList.get(1).getId());
+    }
+
+    @Test
+    @Sql(scripts = {"/clear_all.sql", "/test-get-users.sql"})
+    void removeFriends() {
+        storage.addFriends(1L, 2L);
+        storage.addFriends(1L, 3L);
+        List<User> testList = storage.getFriends(1L);
+        assertEquals(2, testList.size());
+        storage.removeFriends(1L, 2L);
+        List<User> newTestList = storage.getFriends(1L);
+        assertEquals(1, newTestList.size());
     }
 }

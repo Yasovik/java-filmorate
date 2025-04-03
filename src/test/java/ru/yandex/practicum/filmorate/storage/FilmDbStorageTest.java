@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
 @AutoConfigureTestDatabase
@@ -93,5 +94,37 @@ class FilmDbStorageTest {
         assertThat(films.get(2)).hasFieldOrPropertyWithValue("description", "description");
         assertThat(films.get(2)).hasFieldOrProperty("releaseDate");
         assertThat(films.get(2)).hasFieldOrPropertyWithValue("duration", 74);
+    }
+
+    @Test
+    @Sql(scripts = {"/test-get-films.sql"})
+    @Sql(scripts = {"/test-get-users.sql"})
+    void addLikeTest() {
+        storage.addLike(1L, 1L);
+        assertTrue(storage.findFilm(1).getLike().contains(1));
+    }
+
+    @Test
+    @Sql(scripts = {"/test-get-films.sql"})
+    @Sql(scripts = {"/test-get-users.sql"})
+    void removeLike() {
+        storage.addLike(1L, 1L);
+        storage.removeLike(1L, 1L);
+        assertFalse(storage.findFilm(1).getLike().contains(1));
+    }
+
+    @Test
+    @Sql(scripts = {"/test-get-films.sql"})
+    @Sql(scripts = {"/test-get-users.sql"})
+    void getTopFilms() {
+        storage.addLike(3L, 1L);
+        storage.addLike(3L, 2L);
+        storage.addLike(3L, 3L);
+        storage.addLike(2L, 1L);
+        storage.addLike(2L, 2L);
+        storage.addLike(1L, 1L);
+        List<Film> testList = storage.getTopFilms(3);
+        assertEquals(3, testList.get(0).getId());
+        assertEquals(3, testList.size());
     }
 }
