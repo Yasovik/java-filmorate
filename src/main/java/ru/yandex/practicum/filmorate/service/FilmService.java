@@ -1,26 +1,26 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final GenreStorage genreStorage;
+    private final MpaStorage mpaStorage;
     private final UserStorage userStorage;
-
-    @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-    }
 
     public List<Film> getAllFilms() {
         return filmStorage.allFilms();
@@ -31,10 +31,24 @@ public class FilmService {
     }
 
     public Film updateFilm(Film newFilm) {
+        if (newFilm.getId() == null) {
+            log.error("нет айди");
+            throw new ValidationException("Id должен быть указан");
+        }
+        if (filmStorage.findFilm(newFilm.getId().intValue()) == null) {
+            log.error("такого фильма нет {}", newFilm.getId());
+            throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
+        }
         return filmStorage.updateFilm(newFilm);
     }
 
     public Film createFilm(Film film) {
+        if (mpaStorage.getById(film.getMpa().getId()) == null) {
+            throw new NotFoundException("Рейтинг + " + film.getMpa() + " не найден");
+        }
+        if (film.getGenres() != null) {
+            genreStorage.checkGenresExists(film.getGenres());
+        }
         return filmStorage.createFilm(film);
     }
 
@@ -45,28 +59,28 @@ public class FilmService {
 
     public void addLike(int userId, int filmId) {
         log.info("Пользователь {} пытается поставить лайк фильму {}", userId, filmId);
-        try {
-            userStorage.findUser(userId);//выбросит исключение
-            Film film = filmStorage.findFilm(filmId);
-            film.addLike(userId);
-            log.info("Лайк поставлен успешно");
-        } catch (NotFoundException e) {
-            log.warn("Поставить лайк не удалось: {}", e.getMessage());
-            throw e;
+        if (filmStorage.findFilm(filmId) == null) {
+            log.error("ошибка с id фильма  {}", filmId);
+            throw new NotFoundException("Фильма с таким id найдено");
         }
+        if (userStorage.findUser(userId) == null) {
+            log.error("ошибка с id юзера  {}", userId);
+            throw new NotFoundException("Юзера с таким id найдено");
+        }
+        filmStorage.addLike((long) filmId, (long) userId);
     }
 
     public void deleteLike(int userId, int filmId) {
         log.info("Пользователь {} пытается удалить лайк у фильма {}", userId, filmId);
-        try {
-            userStorage.findUser(userId);//выбросит исключение
-            Film film = filmStorage.findFilm(filmId);
-            film.deleteLike(userId);
-            log.info("Лайк удален успешно");
-        } catch (NotFoundException e) {
-            log.warn("Удалить лайк не удалось: {}", e.getMessage());
-            throw e;
+        if (filmStorage.findFilm(filmId) == null) {
+            log.error("ошибка с id фильма  {}", filmId);
+            throw new NotFoundException("Фильма с таким id найдено");
         }
+        if (userStorage.findUser(userId) == null) {
+            log.error("ошибка с id юзера  {}", userId);
+            throw new NotFoundException("Юзера с таким id найдено");
+        }
+        filmStorage.removeLike((long) filmId, (long) userId);
     }
 
 }
